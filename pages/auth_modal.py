@@ -50,7 +50,14 @@ class AuthModal(BasePage):
 
     # ---------- open ----------
     def open_sign_in(self) -> "AuthModal":
-        self.sign_in_button.click()
+        # retry: a click that lands before React hydration does nothing
+        for _ in range(5):
+            self.sign_in_button.click()
+            try:
+                self.dialog.wait_for(state="visible", timeout=2000)
+                break
+            except Exception:  # noqa: BLE001 - not hydrated yet, click again
+                continue
         expect(self.dialog).to_be_visible()
         return self
 

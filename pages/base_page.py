@@ -30,13 +30,13 @@ class BasePage:
     # ---------- navigation ----------
     def open(self, path: str | None = None):
         self.page.goto(path or self.path)  # relative path + base_url from pytest.ini / --base-url
-        self.page.wait_for_load_state("domcontentloaded")
+        self.settle()  # Next.js hydrates after load: clicking earlier is silently ignored
         return self  # returning self allows chaining: HomePage(page).open().do_x()
 
     def settle(self) -> None:
         """Wait until client-side data fetching has finished (Next.js pages render after /api calls)."""
         try:
-            self.page.wait_for_load_state("networkidle", timeout=15000)
+            self.page.wait_for_load_state("networkidle", timeout=10000)
         except Exception:  # noqa: BLE001 - long-polling widgets (maps) may keep the network busy
             pass
 
