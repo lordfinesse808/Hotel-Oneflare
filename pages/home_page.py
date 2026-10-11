@@ -15,8 +15,8 @@ class HomePage(BasePage):
         self.search = SearchWidget(page)
         # sections
         self.locations_heading = self.main.get_by_role("heading", name="Find us where you need us.")
-        self.location_cards = self.main.get_by_role("link").filter(has=page.locator("p")).filter(
-            has_text="Road"
+        self.location_cards = (
+            self.main.get_by_role("link").filter(has=page.locator("p")).filter(has_text="Road")
         )
         self.free_rooms_heading = self.main.get_by_role("heading", name="Free for your dates")
         self.free_rooms_caption = self.main.get_by_text("Live at ")

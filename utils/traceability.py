@@ -13,6 +13,7 @@ Markers (registered in pytest.ini):
 Output: reports/traceability.csv and reports/traceability.md (one row per test, TC and BUG ids, outcome).
 Works with pytest-xdist: ids travel in report.user_properties.
 """
+
 import csv
 from collections import defaultdict
 from pathlib import Path
@@ -46,12 +47,17 @@ def pytest_collection_modifyitems(config, items):
         tcs, bugs = _ids(item, "tc"), _ids(item, "defect")
         item.user_properties.append(("tc", ",".join(tcs)))
         item.user_properties.append(("bugs", ",".join(bugs)))
-        if bugs and mode == "xfail":
-            item.add_marker(pytest.mark.xfail(reason=f"Known defect {', '.join(bugs)}", strict=False))
+        defect = item.get_closest_marker("defect")
+        if defect and mode == "xfail":
+            why = defect.kwargs.get("reason") or ""
+            label = ", ".join(bugs) or "unlogged defect"
+            item.add_marker(pytest.mark.xfail(reason=f"Known defect {label} {why}".strip(), strict=False))
         if item.get_closest_marker("live_write") and not ALLOW_LIVE_WRITES:
             item.add_marker(pytest.mark.skip(reason="Creates live records - set ALLOW_LIVE_WRITES=true"))
         if item.get_closest_marker("needs_account") and not (TEST_EMAIL and TEST_PASSWORD):
-            item.add_marker(pytest.mark.skip(reason="Set TEST_EMAIL and TEST_PASSWORD for an existing account"))
+            item.add_marker(
+                pytest.mark.skip(reason="Set TEST_EMAIL and TEST_PASSWORD for an existing account")
+            )
 
 
 class _Collector:

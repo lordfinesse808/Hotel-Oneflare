@@ -1,7 +1,7 @@
 """Test data read from the site's own public API, so tests never hard-code DB ids that change per environment.
 
-    /api/branches  -> branch ids, names, addresses
-    /api/rooms     -> rooms (branchId == "" for hotel-level rooms, which are the bookable ones today)
+/api/branches  -> branch ids, names, addresses
+/api/rooms     -> rooms (branchId == "" for hotel-level rooms, which are the bookable ones today)
 """
 
 from dataclasses import dataclass, field
@@ -49,7 +49,8 @@ def _data(resp):
 
 def load_site_data(request: APIRequestContext) -> SiteData:
     branches = [
-        Branch(b["id"], b["name"], b.get("city", ""), b.get("address", ""), b) for b in _data(request.get("/api/branches"))
+        Branch(b["id"], b["name"], b.get("city", ""), b.get("address", ""), b)
+        for b in _data(request.get("/api/branches"))
     ]
     rooms = _data(request.get("/api/rooms?limit=50"))
     rooms = rooms.get("items", rooms) if isinstance(rooms, dict) else rooms

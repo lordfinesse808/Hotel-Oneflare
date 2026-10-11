@@ -27,8 +27,10 @@ class _Grab:
 def main() -> int:
     os.chdir(ROOT)
     grab = _Grab()
-    rc = pytest.main(["--collect-only", "-q", "-p", "no:cacheprovider", "-o", "addopts=-p utils.traceability"],
-                     plugins=[grab])
+    rc = pytest.main(
+        ["--collect-only", "-q", "-p", "no:cacheprovider", "-o", "addopts="],
+        plugins=[grab],
+    )
     if rc != 0:
         print("collection failed")
         return 1
@@ -45,8 +47,10 @@ def main() -> int:
             (covered.add(tc) if tc in cases else unknown.append(f"{item.nodeid} -> {tc}"))
 
     missing = sorted(set(cases) - covered)
-    print(f"tests={len(grab.items)} workbook_cases={len(cases)} automated={len(covered)} "
-          f"coverage={len(covered) / len(cases) * 100:.1f}%")
+    print(
+        f"tests={len(grab.items)} workbook_cases={len(cases)} automated={len(covered)} "
+        f"coverage={len(covered) / len(cases) * 100:.1f}%"
+    )
     if missing:
         print("Not automated (see README 'Not automated' for why):")
         for tc in missing:
@@ -60,8 +64,10 @@ def main() -> int:
     summary = os.getenv("GITHUB_STEP_SUMMARY")
     if summary:
         with open(summary, "a") as f:
-            f.write(f"### Workbook coverage\n\n{len(covered)}/{len(cases)} test cases automated "
-                    f"({len(covered) / len(cases) * 100:.1f}%) by {len(grab.items)} tests\n\n")
+            f.write(
+                f"### Workbook coverage\n\n{len(covered)}/{len(cases)} test cases automated "
+                f"({len(covered) / len(cases) * 100:.1f}%) by {len(grab.items)} tests\n\n"
+            )
     return 1 if (untagged or unknown) else 0
 
 

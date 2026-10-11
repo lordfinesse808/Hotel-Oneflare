@@ -31,11 +31,15 @@ class RoomsPage(BasePage):
         # mobile filter drawer
         self.filter_button = self.main.get_by_role("button", name="Filter", exact=True)
         self.filter_drawer = page.get_by_role("dialog", name="Filters")
-        self.show_rooms_button = self.filter_drawer.get_by_role("button", name=re.compile(r"^Show \d+ rooms?"))
+        self.show_rooms_button = self.filter_drawer.get_by_role(
+            "button", name=re.compile(r"^Show \d+ rooms?")
+        )
 
     # ---------- navigation ----------
     def open(self, branch_id: str | None = None, adults: int | None = None, **params):
-        query = {k: v for k, v in {"branchId": branch_id, "adults": adults, **params}.items() if v is not None}
+        query = {
+            k: v for k, v in {"branchId": branch_id, "adults": adults, **params}.items() if v is not None
+        }
         path = self.path + ("?" + "&".join(f"{k}={v}" for k, v in query.items()) if query else "")
         super().open(path)
         expect(self.results_heading).to_be_visible(timeout=20000)
@@ -70,10 +74,12 @@ class RoomsPage(BasePage):
     def card_texts(self) -> list[str]:
         out = []
         for link in self.view_details_links.all():
-            out.append(link.evaluate(
-                """a => { let n = a; while (n.parentElement && !/\\/ night/.test(n.innerText)) n = n.parentElement;
+            out.append(
+                link.evaluate(
+                    """a => { let n = a; while (n.parentElement && !/\\/ night/.test(n.innerText)) n = n.parentElement;
                           return n.innerText; }"""
-            ))
+                )
+            )
         return out
 
     # ---------- actions ----------
@@ -81,7 +87,10 @@ class RoomsPage(BasePage):
         self.price_slider.fill(str(value))  # fill() works on <input type=range>
 
     def slider_bounds(self) -> tuple[int, int]:
-        return (int(float(self.price_slider.get_attribute("min"))), int(float(self.price_slider.get_attribute("max"))))
+        return (
+            int(float(self.price_slider.get_attribute("min"))),
+            int(float(self.price_slider.get_attribute("max"))),
+        )
 
     def select_branch(self, value: str) -> None:
         self.branch_select.select_option(value)

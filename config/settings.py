@@ -3,6 +3,7 @@ so CI and local runs use the same code with different inputs.
 
 Locally, values are read from a `.env` file in the repo root (gitignored, see `.env.example`).
 In CI they come from GitHub Actions secrets / variables."""
+
 import os
 from pathlib import Path
 
@@ -34,6 +35,9 @@ TEST_PHONE = os.getenv("TEST_PHONE", "+2348012345678")
 ALLOW_LIVE_WRITES = _flag("ALLOW_LIVE_WRITES")
 # Backwards-compatible alias used by the original booking test.
 ALLOW_BOOKING_SUBMIT = _flag("ALLOW_BOOKING_SUBMIT") or ALLOW_LIVE_WRITES
+
+# Concurrent-load test (TC-054) hits the shared preview with 50 parallel requests - opt-in only.
+ALLOW_LOAD_TESTS = _flag("ALLOW_LOAD_TESTS")
 
 # Performance budgets (milliseconds). Tune after you have a baseline.
 PERF_TTFB_MS = int(os.getenv("PERF_TTFB_MS", "800"))

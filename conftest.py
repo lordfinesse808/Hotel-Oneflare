@@ -11,6 +11,9 @@ from pages.home_page import HomePage
 from pages.rooms_page import RoomsPage
 from utils.site_data import SiteData, load_site_data
 
+# Workbook traceability (tc/defect/live_write markers + reports/traceability.*)
+pytest_plugins = ["utils.traceability"]
+
 MOBILE = {"viewport": {"width": 375, "height": 812}, "is_mobile": True, "has_touch": True}
 
 
@@ -125,8 +128,8 @@ def monitor(page) -> PageMonitor:
     page.on("pageerror", lambda exc: m.page_errors.append(str(exc)))
     page.on(
         "response",
-        lambda r: m.bad_responses.append((r.status, r.url))
-        if r.status >= 400 and "favicon" not in r.url
-        else None,
+        lambda r: (
+            m.bad_responses.append((r.status, r.url)) if r.status >= 400 and "favicon" not in r.url else None
+        ),
     )
     return m
