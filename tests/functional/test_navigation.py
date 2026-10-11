@@ -146,12 +146,16 @@ def test_search_box_starts_empty(home: HomePage):
 
 
 @pytest.mark.tc("TC-044")
-def test_header_search_returns_relevant_results(page, home: HomePage, site):
+def test_header_search_opens_results_page(page, home: HomePage):
     home.search_box.fill("Deluxe")
     home.search_box.press("Enter")
     expect(page).to_have_url(re.compile(r"/rooms\?.*q=Deluxe"))
-    home.settle()  # let the client-side navigation finish before starting a new one
-    # Same query for a party the default branch can host (1 adult): only Deluxe rooms are listed
+    expect(RoomsPage(page).results_heading).to_be_visible(timeout=15000)
+
+
+@pytest.mark.tc("TC-044")
+def test_search_query_lists_only_matching_rooms(page, site):
+    """Same query as the header search, for a party the default branch can host (1 adult)."""
     rooms = RoomsPage(page).open(branch_id=site.default_branch.id, adults=1, q="Deluxe")
     titles = rooms.card_titles()
     assert titles and all("Deluxe" in t for t in titles), titles
