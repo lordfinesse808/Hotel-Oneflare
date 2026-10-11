@@ -41,6 +41,7 @@ of failures in `reports/artifacts/` (open a trace with `playwright show-trace <t
     ci/check_traceability.py  every test tagged, every TC id valid, coverage of the workbook
     ci/discover.py         live-site ARIA discovery used to build and maintain selectors
     docs/test_cases.csv    workbook test cases (source of truth for traceability)
+    docs/Test_Manual.pdf   line-by-line manual: syntax of every line in the repository and why
     .github/workflows/     ci.yml (pipeline), discover.yml (selector maintenance)
 
 ## How workbook status maps to the suite

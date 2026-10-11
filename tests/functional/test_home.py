@@ -55,9 +55,9 @@ def test_gallery_section_shows_images(home: HomePage):
 @pytest.mark.tc("TC-016", "TC-085")
 def test_amenities_section_lists_amenities(home: HomePage):
     expect(home.amenities_heading).to_be_visible()
-    section = home.amenities_heading.locator("xpath=ancestor::*[count(.//p) >= 4][1]")
-    titles = section.locator("p").all_inner_texts()
-    assert len(titles) >= 6, f"Only {len(titles)} amenity lines: {titles}"  # was 1 ('Free WIFI') in BUG-010
+    # paragraphs between the Amenities heading and the next h2 (amenities load asynchronously)
+    items = home.amenities_heading.locator("xpath=following::p[following::h2]")
+    expect(items.nth(5)).to_be_attached(timeout=15000)  # waits until at least 6 lines exist; BUG-010 showed 1
 
 
 @pytest.mark.tc("TC-016")

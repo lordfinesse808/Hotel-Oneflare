@@ -150,6 +150,7 @@ def test_header_search_returns_relevant_results(page, home: HomePage, site):
     home.search_box.fill("Deluxe")
     home.search_box.press("Enter")
     expect(page).to_have_url(re.compile(r"/rooms\?.*q=Deluxe"))
+    home.settle()  # let the client-side navigation finish before starting a new one
     # Same query for a party the default branch can host (1 adult): only Deluxe rooms are listed
     rooms = RoomsPage(page).open(branch_id=site.default_branch.id, adults=1, q="Deluxe")
     titles = rooms.card_titles()
