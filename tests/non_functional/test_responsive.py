@@ -56,10 +56,10 @@ def test_content_centred_with_readable_width_at_1920(page):
 
 @pytest.mark.responsive
 @pytest.mark.tc("TC-050", "TC-049")
-@pytest.mark.parametrize("device", ["Pixel 7", "iPhone 13"])
-def test_core_flow_on_emulated_phones(playwright, browser, browser_name, base_url, site, device):
+@pytest.mark.parametrize("phone", ["Pixel 7", "iPhone 13"])
+def test_core_flow_on_emulated_phones(playwright, browser, browser_name, base_url, site, phone):
     """Search -> filter -> open room with touch emulation (real devices remain a manual activity)."""
-    profile = dict(playwright.devices[device])
+    profile = dict(playwright.devices[phone])
     if browser_name == "firefox":
         profile.pop("is_mobile", None)  # Firefox does not support isMobile
     profile.pop("default_browser_type", None)

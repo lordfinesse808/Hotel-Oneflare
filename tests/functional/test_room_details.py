@@ -70,8 +70,7 @@ def test_breadcrumb_includes_branch(branch_room: RoomDetailPage, site):
 
 @pytest.mark.tc("TC-090")
 def test_other_room_link_opens_that_room(branch_room: RoomDetailPage):
-    section = branch_room.main.locator("section, div").filter(has=branch_room.other_rooms_heading).last
-    link = section.get_by_role("link").first
+    link = branch_room.other_room_links.first
     href = link.get_attribute("href")
     link.click()
     expect(branch_room.page).to_have_url(re.compile(re.escape(href.split("?")[0])))
@@ -80,9 +79,10 @@ def test_other_room_link_opens_that_room(branch_room: RoomDetailPage):
 @pytest.mark.tc("TC-090")
 @pytest.mark.defect("BUG-003")
 def test_other_rooms_has_no_duplicates(branch_room: RoomDetailPage):
-    section = branch_room.main.locator("section, div").filter(has=branch_room.other_rooms_heading).last
-    names = section.get_by_role("link").all_inner_texts()
-    assert len(names) == len(set(names)), f"duplicate 'other rooms': {names}"
+    """Benin lists 'Standard Room ₦25,000 / night' twice: same room type shown as separate rooms."""
+    expect(branch_room.other_room_links.first).to_be_visible()
+    labels = branch_room.other_room_links.all_inner_texts()
+    assert len(labels) == len(set(labels)), f"duplicate 'other rooms': {labels}"
 
 
 @pytest.mark.tc("TC-013")

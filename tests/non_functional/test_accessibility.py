@@ -5,12 +5,20 @@ from axe_playwright_python.sync_playwright import Axe
 from playwright.sync_api import expect
 
 PAGES = ["/", "/rooms", "/branches", "/gallery", "/about", "/contact", "/manage-booking"]
+# Known axe findings on the live site (open defects): tracked as xfail so new violations still fail.
+AXE_DEFECTS = {
+    "/": pytest.mark.defect(reason="axe serious: color-contrast below WCAG AA on Home"),
+    "/gallery": pytest.mark.defect(
+        "BUG-045", reason="axe critical: location <select> has no accessible name"
+    ),
+}
+AXE_PAGES = [pytest.param(p, marks=AXE_DEFECTS[p]) if p in AXE_DEFECTS else p for p in PAGES]
 BLOCKING = {"critical", "serious"}  # gate: these impacts fail the build
 
 
 @pytest.mark.a11y
 @pytest.mark.tc("TC-056")
-@pytest.mark.parametrize("path", PAGES)
+@pytest.mark.parametrize("path", AXE_PAGES)
 def test_no_critical_or_serious_axe_violations(page, path):
     page.goto(path, wait_until="networkidle")
     result = Axe().run(page)  # injects axe-core and scans the whole document
@@ -36,6 +44,7 @@ def test_every_form_control_has_an_accessible_name(page, path):
 
 @pytest.mark.a11y
 @pytest.mark.tc("TC-056")
+@pytest.mark.defect("BUG-045")
 def test_room_detail_date_inputs_are_labelled(page, site):
     page.goto(f"/rooms/{site.bookable_room['id']}", wait_until="networkidle")
     for el in page.locator("main input[type=date]").all():

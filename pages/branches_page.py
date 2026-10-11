@@ -19,7 +19,7 @@ class BranchesPage(BasePage):
 
     def card(self, branch_name: str) -> Locator:
         """The smallest element that holds the branch heading AND its 'Contact this branch' link."""
-        heading = self.main.get_by_role("heading", name=branch_name, exact=True)
+        heading = self.page.get_by_role("heading", name=branch_name, exact=True)  # relative to each div
         return (
             self.main.locator("div, article, section, li")
             .filter(has=heading)

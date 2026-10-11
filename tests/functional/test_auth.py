@@ -47,6 +47,7 @@ def test_dialog_closes(modal: AuthModal, how):
 
 @pytest.mark.tc("TC-100", "TC-055")
 @pytest.mark.a11y
+@pytest.mark.defect(reason="focus is not returned to the Sign in trigger after the dialog closes")
 def test_focus_returns_to_trigger_after_close(modal: AuthModal):
     modal.open_sign_in()
     modal.page.keyboard.press("Escape")
@@ -186,7 +187,9 @@ def test_invalid_email_blocks_registration(modal: AuthModal):
     modal.email.fill("not-an-email")
     modal.submit.click()
     expect(modal.register_heading).to_be_visible()
-    expect(modal.dialog.get_by_text("Enter a valid email")).to_be_visible()
+    # blocked either by the browser (type=email) or by the app's own message
+    native_invalid = not modal.email.evaluate("e => e.validity.valid")
+    assert native_invalid or modal.dialog.get_by_text("Enter a valid email").is_visible()
 
 
 @pytest.mark.live_write

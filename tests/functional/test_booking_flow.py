@@ -80,8 +80,13 @@ def test_email_and_phone_format_validation(guest_step: BookingPage):
     guest_step.guest_name.fill("Ada Obi")
     guest_step.guest_email.fill("ada@")
     guest_step.guest_phone.fill("abc")
+    guest_step.accept_consent()
     guest_step.review_button.click()
-    expect(guest_step.email_error).to_be_visible()
+    # 'ada@' is stopped by the browser (type=email) or by the app message
+    assert not guest_step.guest_email.evaluate("e => e.validity.valid") or guest_step.email_error.is_visible()
+    expect(guest_step.review_heading).to_have_count(0)
+    guest_step.guest_email.fill("ada@example.com")
+    guest_step.review_button.click()
     expect(guest_step.phone_error).to_be_visible()
 
 
@@ -125,8 +130,12 @@ def test_guest_name_character_validation(guest_step: BookingPage, name):
 def test_script_in_guest_name_is_rendered_as_text(guest_step: BookingPage):
     fired = []
     guest_step.page.on("dialog", lambda d: (fired.append(d.message), d.dismiss()))
-    guest_step.go_to_review(GuestData(full_name="<img src=x onerror=alert(1)>"))
-    expect(guest_step.main.get_by_text("<img src=x onerror=alert(1)>")).to_be_visible()
+    payload = "<img src=x onerror=alert(1)>"
+    guest_step.fill_guest(GuestData(full_name=payload)).accept_consent()
+    guest_step.review_button.click()
+    guest_step.page.wait_for_timeout(1500)
+    if guest_step.review_heading.is_visible():  # accepted -> must be shown as plain text
+        expect(guest_step.main.get_by_text(payload)).to_be_visible()
     assert not fired, "script executed from guest name"
 
 
@@ -227,6 +236,7 @@ def test_change_room_or_dates_keeps_dates(guest_step: BookingPage):
 
 
 @pytest.mark.tc("TC-014")
+@pytest.mark.defect(reason="'Back to the room' lands on the /rooms list instead of the selected room")
 def test_back_to_room_returns_to_detail_page(guest_step: BookingPage):
     guest_step.back_to_room.click()
     expect(guest_step.page).to_have_url(re.compile(r"/rooms/[0-9a-f-]{36}"))

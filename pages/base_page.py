@@ -2,6 +2,7 @@
 Every other page object inherits from this class (OOP inheritance = no duplicated code)."""
 
 import re
+import time
 
 from playwright.sync_api import Locator, Page, expect
 
@@ -53,6 +54,19 @@ class BasePage:
     def user_menu(self, name: str) -> Locator:
         # After login the header shows the customer's name/initials instead of "Sign in"
         return self.header.get_by_role("link", name=re.compile(re.escape(name), re.I))
+
+    def is_on_screen(self, locator: Locator) -> bool:
+        """Slide-in drawers stay in the DOM when closed, translated off-screen; Playwright still calls
+        them 'visible', so check the geometry instead."""
+        box = locator.bounding_box()
+        width = self.page.viewport_size["width"]
+        return bool(box) and box["x"] < width - 1 and box["x"] + box["width"] > 1
+
+    def expect_on_screen(self, locator: Locator, on: bool = True, timeout_s: float = 5.0) -> None:
+        deadline = time.monotonic() + timeout_s
+        while self.is_on_screen(locator) != on and time.monotonic() < deadline:
+            self.page.wait_for_timeout(100)
+        assert self.is_on_screen(locator) == on, f"{locator} on_screen != {on}"
 
     # ---------- shared assertions ----------
     def expect_url_contains(self, fragment: str) -> None:

@@ -57,6 +57,7 @@ def test_every_branch_has_photos(gallery: GalleryPage, site):
 
 
 @pytest.mark.tc("TC-111")
+@pytest.mark.defect(reason="regression: clicking a photo no longer opens a lightbox (workbook: Pass)")
 def test_photo_lightbox_opens_navigates_and_closes(gallery: GalleryPage):
     gallery.photos.first.click(force=True)
     box = gallery.page.get_by_role("dialog").filter(has=gallery.page.get_by_role("img"))

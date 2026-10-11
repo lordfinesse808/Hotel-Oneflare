@@ -92,7 +92,9 @@ def test_offscreen_images_are_lazy_loaded(page):
 
 @pytest.mark.perf
 @pytest.mark.tc("TC-053")
-@pytest.mark.parametrize("path", ["/", "/rooms"])
+@pytest.mark.parametrize(
+    "path", ["/", pytest.param("/rooms", marks=pytest.mark.defect("BUG-013", reason="CLS ~0.16 on /rooms"))]
+)
 def test_cumulative_layout_shift(page, browser_name, path):
     _chromium_only(browser_name)
     page.goto(path, wait_until="load")

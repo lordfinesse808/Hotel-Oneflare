@@ -31,6 +31,8 @@ class RoomDetailPage(BasePage):
         self.house_rules_heading = self.main.get_by_role("heading", name="House rules")
         self.policy_link = self.main.get_by_role("link", name=re.compile("Read the full policy"))
         self.other_rooms_heading = self.main.get_by_role("heading", name=re.compile(r"^Other rooms"))
+        # links listed under 'Other rooms' (each link text is 'Name ₦price / night')
+        self.other_room_links = self.main.get_by_role("link", name=re.compile(r"₦[\d,]+ / night$"))
         self.validation_error = self.main.get_by_text(
             re.compile(
                 r"(check-?out|departure).*(after|later)|at least 1 night|in the past|maximum|cannot", re.I
@@ -63,7 +65,7 @@ class RoomDetailPage(BasePage):
     def price_block_text(self) -> str:
         return self.total.evaluate(
             "e => { let n = e; while (n.parentElement && !/Room ·/.test(n.innerText)) n = n.parentElement;"
-            " return n.innerText; }"
+            " return n.innerText.slice(n.innerText.indexOf('Room ·')); }"
         )
 
     def total_amount(self) -> int:

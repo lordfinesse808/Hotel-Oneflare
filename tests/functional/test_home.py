@@ -15,7 +15,8 @@ PLACEHOLDER_COPY = re.compile(r"whatever amount|lorem ipsum|placeholder|TODO|Liv
 @pytest.mark.tc("TC-083")
 def test_hero_copy_image_and_cta(home: HomePage):
     expect(home.hero_heading).to_have_text("Space to work, and to stop working")
-    expect(home.main.locator("section").first).not_to_contain_text(PLACEHOLDER_COPY)
+    hero = home.hero_heading.locator("xpath=..")
+    expect(hero).not_to_contain_text(PLACEHOLDER_COPY)
     home.explore_rooms()
     home.expect_url_contains("/rooms")
 
@@ -47,15 +48,14 @@ def test_locations_section_lists_every_branch(home: HomePage, site):
 @pytest.mark.tc("TC-016")
 def test_gallery_section_shows_images(home: HomePage):
     expect(home.gallery_heading).to_be_visible()
-    section = home.main.locator("section").filter(has=home.gallery_heading)
+    section = home.gallery_heading.locator("xpath=ancestor::*[count(.//img) >= 3][1]")
     expect(section.get_by_role("img").first).to_be_visible()
-    assert section.get_by_role("img").count() >= 3
 
 
 @pytest.mark.tc("TC-016", "TC-085")
 def test_amenities_section_lists_amenities(home: HomePage):
     expect(home.amenities_heading).to_be_visible()
-    section = home.main.locator("section").filter(has=home.amenities_heading)
+    section = home.amenities_heading.locator("xpath=ancestor::*[count(.//p) >= 4][1]")
     titles = section.locator("p").all_inner_texts()
     assert len(titles) >= 6, f"Only {len(titles)} amenity lines: {titles}"  # was 1 ('Free WIFI') in BUG-010
 

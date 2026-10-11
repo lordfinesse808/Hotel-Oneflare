@@ -339,12 +339,22 @@ def test_mobile_filter_drawer(mobile_page, site):
     rooms = RoomsPage(mobile_page).open(branch_id=site.default_branch.id, adults=1)
     original = rooms.room_count()
     rooms.filter_button.click()
-    expect(rooms.filter_drawer).to_be_visible()
+    rooms.expect_on_screen(rooms.filter_drawer, on=True)
     rooms.filter_drawer.get_by_role("checkbox", name="Deluxe Room").check()
-    expect(rooms.show_rooms_button).to_have_text(re.compile(r"Show 1 room"))
+    expect(rooms.show_rooms_button).to_have_text(re.compile(r"Show 1 rooms?$"))
     rooms.show_rooms_button.click()
-    expect(rooms.filter_drawer).to_be_hidden()
+    rooms.expect_on_screen(rooms.filter_drawer, on=False)
     assert rooms.wait_for_count(lambda c: c < original) == 1
+
+
+@pytest.mark.mobile
+@pytest.mark.tc("TC-080", "TC-009")
+@pytest.mark.defect(reason="drawer button reads 'Show 1 rooms' (plural with 1)")
+def test_mobile_filter_button_singular(mobile_page, site):
+    rooms = RoomsPage(mobile_page).open(branch_id=site.default_branch.id, adults=1)
+    rooms.filter_button.click()
+    rooms.filter_drawer.get_by_role("checkbox", name="Deluxe Room").check()
+    expect(rooms.show_rooms_button).to_have_text("Show 1 room")
 
 
 @pytest.mark.smoke
