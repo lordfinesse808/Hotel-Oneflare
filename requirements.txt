@@ -1,0 +1,7 @@
+pytest>=8.0
+pytest-playwright>=0.5          # gives us the `page`, `browser`, `context` fixtures + --browser flag
+pytest-html>=4.1                # human-readable HTML report
+pytest-xdist>=3.5               # parallel execution (-n)
+pytest-rerunfailures>=14.0      # one controlled retry for network flakiness
+axe-playwright-python>=0.1.4    # axe-core accessibility engine
+ruff>=0.5                       # linter / formatter used as a CI gate

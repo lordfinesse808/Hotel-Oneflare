@@ -1,0 +1,119 @@
+name: Oneflare QA Pipeline
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "0 5 * * *"          # nightly 05:00 UTC (06:00 Lagos) full run
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: "Environment under test"
+        default: "https://hotel-plaza-preview.vercel.app"
+
+concurrency:                      # a new push cancels the older run for the same branch
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read                  # least privilege
+
+env:
+  BASE_URL: ${{ inputs.base_url || 'https://hotel-plaza-preview.vercel.app' }}
+  PYTHON_VERSION: "3.12"
+
+jobs:
+  # ---------- GATE 1: static checks (seconds, no browser) ----------
+  lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "${{ env.PYTHON_VERSION }}", cache: pip }
+      - run: pip install -r requirements.txt
+      - run: ruff check .                              # lint errors fail the build
+      - run: ruff format --check .                     # formatting drift fails the build
+      - run: pytest --collect-only -q --base-url "$BASE_URL" -p no:cacheprovider   # collection must succeed
+
+  # ---------- GATE 2: smoke - 100% must pass ----------
+  smoke:
+    needs: lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "${{ env.PYTHON_VERSION }}", cache: pip }
+      - run: pip install -r requirements.txt
+      - run: playwright install --with-deps chromium
+      - name: Run smoke suite
+        run: pytest -m smoke --base-url "$BASE_URL" --reruns 1 --reruns-delay 2 -n 2
+      - name: Enforce gate (100% pass, at least 8 tests)
+        if: always()
+        run: python ci/quality_gate.py reports/junit.xml --min-pass-rate 100 --min-tests 8
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: smoke-reports, path: reports/, retention-days: 14 }
+
+  # ---------- GATE 3: functional regression across 3 browsers (>=95%) ----------
+  regression:
+    needs: smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false             # let every browser finish so you see all failures
+      matrix:
+        browser: [chromium, firefox, webkit]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "${{ env.PYTHON_VERSION }}", cache: pip }
+      - run: pip install -r requirements.txt
+      - run: playwright install --with-deps ${{ matrix.browser }}
+      - name: Run functional suite
+        run: pytest tests/functional --browser ${{ matrix.browser }} --base-url "$BASE_URL" --reruns 1 --reruns-delay 2 -n 3
+      - name: Enforce gate (>=95% pass)
+        if: always()
+        run: python ci/quality_gate.py reports/junit.xml --min-pass-rate 95 --min-tests 30 --max-duration 1500
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: regression-${{ matrix.browser }}
+          path: reports/
+          retention-days: 14
+
+  # ---------- GATE 4: non-functional (perf budgets, axe a11y, responsive, security) ----------
+  non-functional:
+    needs: smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "${{ env.PYTHON_VERSION }}", cache: pip }
+      - run: pip install -r requirements.txt
+      - run: playwright install --with-deps chromium
+      - name: Run non-functional suite
+        run: pytest tests/non_functional --base-url "$BASE_URL" --reruns 1 -n 2
+      - name: Enforce gate (100% of enforced checks)
+        if: always()
+        run: python ci/quality_gate.py reports/junit.xml --min-pass-rate 100 --min-tests 30
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: non-functional-reports, path: reports/, retention-days: 14 }
+
+  # ---------- final verdict: the ONLY check you mark "required" in branch protection ----------
+  quality-gate:
+    needs: [lint, smoke, regression, non-functional]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail if any upstream gate failed or was cancelled
+        run: |
+          echo '${{ toJSON(needs) }}'
+          if [ "${{ contains(needs.*.result, 'failure') }}" = "true" ] || [ "${{ contains(needs.*.result, 'cancelled') }}" = "true" ]; then
+            echo "Quality gate FAILED"; exit 1
+          fi
+          echo "All quality gates passed"
