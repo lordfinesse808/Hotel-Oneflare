@@ -7,7 +7,7 @@ name: Oneflare QA Pipeline
 on:
   pull_request:
   push:
-    branches: [main, "cl/**", "feature/**", "fix/**"]
+    branches: [main] # feature branches are covered by their pull_request runs (no duplicate pipelines)
   schedule:
     - cron: "0 5 * * *" # nightly 05:00 UTC (06:00 Lagos) full run
   deployment_status: # Vercel GitHub integration posts this after each deploy
@@ -148,7 +148,7 @@ jobs:
   # ---------- consolidated report: traceability vs the QA workbook ----------
   report:
     needs: [smoke, regression, non-functional]
-    if: always() && needs.smoke.result != 'skipped'
+    if: ${{ !cancelled() && needs.smoke.result != 'skipped' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -168,7 +168,7 @@ jobs:
   # ---------- final verdict: the ONLY check you mark "required" in branch protection ----------
   quality-gate:
     needs: [guard, lint, smoke, regression, non-functional, report]
-    if: always() && needs.guard.result == 'success'
+    if: ${{ !cancelled() && needs.guard.result == 'success' }} # a superseded (cancelled) run reports nothing
     runs-on: ubuntu-latest
     steps:
       - name: Fail if any upstream gate failed or was cancelled

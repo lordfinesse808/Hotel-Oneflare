@@ -54,7 +54,7 @@ of failures in `reports/artifacts/` (open a trace with `playwright show-trace <t
 | Skipped / N/A | explicit `pytest.skip` with the workbook reason, so it stays visible in reports |
 
 ## CI/CD pipeline (`.github/workflows/ci.yml`)
-Triggers: pull requests, pushes to `main`/`cl/**`/`feature/**`/`fix/**`, nightly 05:00 UTC, manual dispatch
+Triggers: pull requests, pushes to `main`, nightly 05:00 UTC, manual dispatch
 (choose environment, `known_defects`, `allow_live_writes`), and every successful **deployment_status**
 (Vercel preview builds are tested at their own URL).
 
