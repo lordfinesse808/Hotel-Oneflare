@@ -150,7 +150,7 @@ def test_past_dates_from_url_are_rejected(page, site):
     assert "/booking" not in page.url, "past stay accepted and taken to /booking"
 
 
-@pytest.mark.tc("TC-025", "TC-030")
+@pytest.mark.tc("TC-025")
 def test_total_equals_nights_times_rate_plus_listed_charges(hotel_room: RoomDetailPage, site):
     block = hotel_room.price_block_text()
     nights = int(re.search(r"Room · (\d+) nights?", block).group(1))

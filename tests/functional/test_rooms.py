@@ -90,7 +90,7 @@ def test_capacity_text_singular_and_plural(page, site):
     assert not re.search(r"\b([2-9]|\d{2,}) (adult|child)\b(?!ren)", text), "plural count with singular noun"
 
 
-@pytest.mark.tc("TC-025", "TC-030")
+@pytest.mark.tc("TC-025")
 def test_card_total_equals_nightly_rate_times_nights(page, site):
     check_in = date.today() + timedelta(days=10)
     for nights in (2, 3):
@@ -228,7 +228,7 @@ def test_branch_choice_persists_across_pages(page, site):
 
 
 # ---------- filters ----------
-@pytest.mark.tc("TC-026", "TC-034")
+@pytest.mark.tc("TC-026")
 def test_room_type_filter_and_untick_restores(rooms: RoomsPage):
     original = rooms.room_count()
     rooms.toggle("Deluxe Room", on=True)
@@ -268,7 +268,7 @@ def test_filter_options_come_from_branch_inventory(rooms: RoomsPage):
         rooms.toggle(opt, on=False)
 
 
-@pytest.mark.tc("TC-029", "TC-038")
+@pytest.mark.tc("TC-029")
 def test_incompatible_filters_show_empty_state(page, site):
     rooms = RoomsPage(page).open(branch_id=site.branch("Lagos").id, adults=1)
     rooms.toggle("Presidential", on=True)
@@ -278,7 +278,7 @@ def test_incompatible_filters_show_empty_state(page, site):
     expect(rooms.empty_state).to_be_visible()
 
 
-@pytest.mark.tc("TC-015", "TC-035")
+@pytest.mark.tc("TC-015")
 def test_price_slider_filters_and_updates_count(rooms: RoomsPage):
     low, high = rooms.slider_bounds()
     at_high = rooms.room_count()
@@ -289,7 +289,7 @@ def test_price_slider_filters_and_updates_count(rooms: RoomsPage):
     assert all(p <= low for p in prices), prices
 
 
-@pytest.mark.tc("TC-015", "TC-038")
+@pytest.mark.tc("TC-015")
 @pytest.mark.defect("BUG-009")
 def test_clear_filters_control_restores_all_rooms(rooms: RoomsPage):
     original = rooms.room_count()

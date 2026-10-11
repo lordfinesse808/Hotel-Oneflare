@@ -22,7 +22,7 @@ def test_hero_copy_image_and_cta(home: HomePage):
 
 
 @pytest.mark.smoke
-@pytest.mark.tc("TC-084", "TC-014")
+@pytest.mark.tc("TC-084")
 def test_home_search_submits_branch_dates_and_guests(page, home: HomePage, site):
     owerri = site.branch("Owerri")
     check_in = date.today() + timedelta(days=7)

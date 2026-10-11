@@ -114,7 +114,7 @@ def test_consent_privacy_link_works(page, guest_step: BookingPage):
     assert page.request.get(href).status == 200
 
 
-@pytest.mark.tc("TC-120", "TC-057")
+@pytest.mark.tc("TC-120")
 @pytest.mark.defect("BUG-047")
 @pytest.mark.parametrize(
     "name", ["<script>alert(1)</script>", "12345", "A"], ids=["script", "digits", "one-char"]
@@ -125,7 +125,7 @@ def test_guest_name_character_validation(guest_step: BookingPage, name):
     expect(guest_step.review_heading).to_have_count(0, timeout=3000)
 
 
-@pytest.mark.tc("TC-057", "TC-120")
+@pytest.mark.tc("TC-120", "TC-059")
 @pytest.mark.security
 def test_script_in_guest_name_is_rendered_as_text(guest_step: BookingPage):
     fired = []
@@ -204,7 +204,7 @@ def test_tax_amounts_match_their_rates(page, site):
         )
 
 
-@pytest.mark.tc("TC-095", "TC-062")
+@pytest.mark.tc("TC-095")
 @pytest.mark.defect("BUG-049")
 def test_edit_details_keeps_everything_incl_consent(guest_step: BookingPage):
     guest = GuestData()
@@ -226,7 +226,7 @@ def test_back_to_guest_details_keeps_contact_data(guest_step: BookingPage):
     expect(guest_step.guest_phone).to_have_value(guest.phone)
 
 
-@pytest.mark.tc("TC-095", "TC-014", "TC-062")
+@pytest.mark.tc("TC-095", "TC-014")
 def test_change_room_or_dates_keeps_dates(guest_step: BookingPage):
     guest_step.go_to_review(GuestData())
     guest_step.change_room.click()

@@ -19,7 +19,7 @@ def test_signed_out_account_page_prompts_sign_in(page):
     expect(account.signed_out_sign_in).to_be_visible()
 
 
-@pytest.mark.tc("TC-105", "TC-043")
+@pytest.mark.tc("TC-105")
 def test_customer_account_copy_has_no_agent_wording(page):
     account = AccountPage(page).open()
     expect(account.main).not_to_contain_text(re.compile("commission", re.I))
