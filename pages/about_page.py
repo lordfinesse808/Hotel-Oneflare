@@ -8,5 +8,8 @@ class AboutPage(BasePage):
 
     def __init__(self, page: Page):
         super().__init__(page)
-        self.about_text = page.get_by_text("About Oneflare Grand").first
-        self.locations = page.get_by_text("The locations").first
+        self.heading = self.main.get_by_role("heading", level=1)
+        self.principles_heading = self.main.get_by_role("heading", name="What we hold ourselves to")
+        self.principles = self.main.get_by_role("heading", level=3)
+        self.locations_heading = self.main.get_by_role("heading", name="The locations")
+        self.location_links = self.main.get_by_role("link").filter(has_text="Oneflare Grand Plaza -")

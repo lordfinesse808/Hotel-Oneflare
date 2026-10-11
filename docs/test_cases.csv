@@ -1,0 +1,124 @@
+Test Case ID,Module,Title,Type,Priority,Linked Bug,Expected Result,Status,Automation Candidate,Scope Ref (Coverage Matrix)
+TC-001,Rooms / Listing,Room card shows image for every room type,Regression,P2,BUG-001,Every card displays a loaded room photo with meaningful alt text; no empty grey block.,Fail,Fail,Fail
+TC-002,Rooms / Listing,Fallback shown when a room image fails to load,Negative,P3,BUG-001,A branded placeholder or alt text is shown; layout is not broken; no console error flood.,Fail,Yes,SC-027
+TC-003,Rooms / Listing,Room name displays without duplicated word,Regression,P3,BUG-002,"Titles read ""Standard Room"", ""Deluxe Room"" etc. No ""Room Room"".",Fail,Yes,"SC-026, SC-113"
+TC-004,Rooms / Listing,Heading count equals number of distinct room types shown,Regression,P1,BUG-003,Heading count equals unique cards displayed.,Fail,Yes,SC-028
+TC-005,Rooms / Listing,No duplicate identical room cards,Regression,P1,BUG-003,"No two cards share identical room type, price and spec unless intentionally grouped with a quantity indicator.",Fail,Yes,SC-026
+TC-006,Rooms / Listing,"""Rooms left"" label reflects real inventory",Functional,P2,BUG-003,Label equals real available units and decrements after a booking.,Blocked,Yes,SC-029
+TC-007,Rooms / Search,2-adult search excludes rooms with max 1 adult,Regression,P1,BUG-004,Rooms with max adults < 2 are not listed or are disabled with a clear reason.,Fail,Yes,SC-022
+TC-008,Rooms / Search,Boundary: guests equal to and above room max capacity,Boundary,P1,BUG-004,Equal to max: room listed. Above max: room hidden or blocked with message.,Fail,Yes,SC-022
+TC-009,Rooms / Listing,Capacity text uses correct singular/plural,Regression,P3,BUG-005,"""1 adult"", ""2 adults"", ""1 child"", ""2 children"".",Fail,Yes,SC-113
+TC-010,Global / Footer,"Footer shows phone, email and address for each branch and head office",Regression,P2,BUG-006,Every branch shows phone and email values; Head office shows address; no dangling separators or empty icons.,Fail,Yes,"SC-007, SC-008"
+TC-011,Contact,"Contact info panel shows address, hours, phone, email and a map for every branch tab",Regression,P1,BUG-007,"Map renders; Address, Hours, Phone, Email all populated and correct for the selected branch.",Fail,Yes,"SC-085, SC-086"
+TC-012,Contact,Contact form submits with valid data,Functional,P2,BUG-007,Success confirmation shown; message routed to selected branch front office.,Blocked,Yes,SC-088
+TC-013,Booking / Selection,Select room opens booking step with correct room and dates,Regression,P1,BUG-008,"Booking page loads within 3s showing selected room, dates, guests and price; no stuck skeleton; no redirect to home.",Fail,Yes,SC-049
+TC-014,Booking / Selection,Selecting a room then browser back preserves search state,Functional,P2,BUG-008,"Returns to /rooms with the same branch, dates, guests and filters.",Blocked,Yes,SC-062
+TC-015,Rooms / Filters,Price slider filters list and updates count,Regression,P3,BUG-009,Only rooms within range listed; heading count updates; Clear filters restores all rooms.,Fail,Yes,"SC-035, SC-038"
+TC-016,Home,Homepage sections display their content,Regression,P2,BUG-010,"Each section shows branch cards, room cards, gallery images and amenity list; no heading-only sections.",Fail,Yes,"SC-015, SC-016, SC-017, SC-018"
+TC-017,Security,Unauthenticated access to /staff is blocked,Security,P1,BUG-011,Redirect to login or 401/403; no staff data returned.,Pass,Partial,SC-110
+TC-018,Rooms / Search,Date format is unambiguous,Regression,P3,BUG-012,Dates display with month name or agreed locale format; picker and field match.,Fail,Yes,SC-025
+TC-019,Global / Footer,Footer branch list is complete on first render and matches Contact tabs,Regression,P3,BUG-013,All 5 branches present on first paint; no layout shift.,Pass,Yes,"SC-007, SC-102"
+TC-020,Rooms / Search,Search with past check-in date is rejected,Negative,P1,BUG-015,Error shown; search not executed.,Fail,Yes,SC-021
+TC-021,Rooms / Search,Check-out before or equal to check-in is rejected,Negative,P1,BUG-014,Validation message; minimum 1 night enforced.,Fail,Yes,SC-021
+TC-022,Rooms / Search,Search returns rooms for chosen branch only,Functional,P1,BUG-025,Heading and cards belong to Lekki branch.,Fail,Yes,"SC-020, SC-032"
+TC-023,Rooms / Search,No availability message when all rooms booked,Functional,P2,,"Clear ""no rooms available"" message with suggestion to change dates or branch; no blank page.",Not Run,Yes,SC-031
+TC-024,Rooms / Search,Guest count minimum and maximum limits,Boundary,P2,,0 blocked; max accepted; above max blocked or no results with message.,Fail,Yes,SC-022
+TC-025,Rooms / Search,Nights and total price computed correctly,Functional,P1,BUG-017,"2 nights = N50,000; 3 nights = N75,000. Total matches booking summary and receipt.",Fail,Yes,SC-030
+TC-026,Rooms / Filters,Room type filter,Functional,P2,,Only Deluxe cards listed; untick restores list.,Pass,Yes,SC-034
+TC-027,Rooms / Filters,Bed type filter,Functional,P2,BUG-027,Only King-bed rooms listed.,Fail,Yes,SC-036
+TC-028,Rooms / Filters,Multiple amenities filter uses AND logic,Functional,P2,BUG-028,Only rooms that have both are listed.,Fail,Yes,SC-037
+TC-029,Rooms / Filters,Combined filters with no matches show empty state,Negative,P2,,"""No rooms match"" state with Clear filters; no error.",Pass,Yes,"SC-031, SC-038"
+TC-030,Rooms / Filters,Amenities list scrolls and all items are selectable,UI,P3,,All amenities reachable; list scroll does not scroll the page.,Not Run,No,SC-037
+TC-031,Rooms / Details,View details shows full room info and images,Functional,P2,BUG-030,"Description, amenities, capacity, bed, photos, price and policies shown; Select room available.",Fail,Yes,SC-041
+TC-032,Booking / Guest details,Mandatory guest fields validated,Negative,P1,,Inline errors for each mandatory field; no submission.,Pass,Yes,SC-051
+TC-033,Booking / Guest details,Email and phone format validation,Negative,P2,,Invalid formats rejected; +234 and 080/081/070/090 numbers accepted.,Pass,Yes,SC-051
+TC-034,Booking / Payment,Successful payment confirms booking,Functional,P1,,Confirmation page with booking reference; email received; inventory decremented.,Skipped,Yes,SC-057
+TC-035,Booking / Payment,Declined card shows error and keeps room held,Negative,P1,,Clear decline message; no booking created on failure; retry succeeds without duplicate charge.,Skipped,Yes,SC-057
+TC-036,Booking / Payment,Gateway timeout or closed payment window,Negative,P2,,"No confirmed booking, no charge, user informed and can resume.",Skipped,Yes,SC-057
+TC-037,Booking / Availability,Last room cannot be double booked,Concurrency,P1,,Second booking blocked at final availability check (as the homepage promises); no double booking.,Blocked,No,SC-060
+TC-038,Booking / Availability,Room hold expires after session timeout,Functional,P3,,User is told availability is rechecked or hold expired; no stale booking.,Not Run,Yes,SC-061
+TC-039,Booking / Confirmation,Confirmation email and reference are correct,Functional,P2,,All details match; reference works in Manage a booking.,Blocked,Yes,SC-058
+TC-040,Account,Sign in with valid and invalid credentials,Functional,P2,,Valid logs in; invalid shows generic error with no account enumeration.,Blocked,Yes,SC-066
+TC-041,Account,Manage a booking by reference,Functional,P2,BUG-043,Booking details load; wrong reference shows not-found message.,Fail,Yes,SC-071
+TC-042,Account,Cancel booking follows the cancellation policy,Functional,P1,,Refund or fee matches Cancellation policy; room returns to inventory; email sent.,Blocked,Yes,SC-072
+TC-043,Navigation,Header and footer links resolve with no 404,Functional,P2,BUG-020,"All pages load (Rooms, Branches, Gallery, About, Contact, Privacy, Terms, Cancellation, Manage booking).",Fail,Yes,"SC-001, SC-002, SC-005, SC-009, SC-010, SC-011, SC-019"
+TC-044,Navigation,Header search returns relevant results,Functional,P3,BUG-033,Relevant results; empty state for no results.,Fail,Yes,SC-003
+TC-045,Contact,Contact form mandatory validation and branch routing,Negative,P2,,"Required fields flagged; heading ""Going to <branch>"" matches selected tab.",Pass,Yes,SC-087
+TC-046,Responsive,Layout at 375px width (mobile),UI,P1,BUG-038,No horizontal scroll; filters collapse to a drawer; buttons tappable (>=44px).,Fail,No,SC-096
+TC-047,Responsive,Layout at 768px width (tablet),UI,P2,,Cards reflow without overlap or truncation.,Pass,No,SC-097
+TC-048,Responsive,Layout at 1920px width (large desktop),UI,P3,,"Content centred, readable line lengths, no stretched images.",Pass,No,SC-097
+TC-049,Compatibility,"Core booking flow in Chrome, Firefox, Edge, Safari",Compatibility,P1,,Same behaviour and layout across browsers.,Not Run,Yes,SC-098
+TC-050,Compatibility,Mobile browsers: Chrome Android and Safari iOS,Compatibility,P1,,"Date picker, filters and buttons work with touch.",Not Run,Yes,SC-099
+TC-051,Performance,Page load on Slow 4G (Nigeria network profile),Performance,P1,,LCP under 4s; images lazy loaded; skeletons resolve within 5s.,Not Run,Partial,SC-100
+TC-052,Performance,Skeleton loaders always resolve,Performance,P1,BUG-008,Content replaces skeleton or an error with retry is shown; never stuck.,Fail,Partial,SC-101
+TC-053,Performance,Cumulative layout shift stays low,Performance,P2,BUG-013,CLS <= 0.1; Performance score >= 80.,Not Run,Partial,SC-102
+TC-054,Performance,Rooms search response time under concurrent load,Performance,P3,,p95 under 2s; no 5xx.,Not Run,Partial,SC-104
+TC-055,Accessibility,"Keyboard navigation of search, filters and Select room",Accessibility,P2,BUG-045,"Logical order, visible focus, all controls reachable and operable.",Fail,Partial,SC-105
+TC-056,Accessibility,"Alt text, labels and colour contrast",Accessibility,P2,BUG-001,No critical violations; images have alt; inputs have labels; contrast >= 4.5:1.,Fail,Partial,SC-106
+TC-057,Security,Contact form resists script injection,Security,P2,,Input sanitised; no script execution; no stored XSS in staff view.,Blocked,Partial,SC-109
+TC-058,Security,All pages served over HTTPS with secure headers,Security,P2,BUG-040,HTTP redirects to HTTPS; HSTS and CSP present; no mixed content.,Fail,Partial,"SC-107, SC-108"
+TC-059,Security,Booking and guest data not exposed in URL or API,Security,P2,,No PII or payment data in query strings; API enforces authorisation.,Pass,Partial,SC-111
+TC-060,SEO / Errors,Unknown URL shows a branded 404 page,Functional,P3,BUG-037,Branded 404 with link home; HTTP status 404.,Fail,Yes,SC-093
+TC-061,SEO / Errors,Page titles and meta descriptions per page,Functional,P3,BUG-044,"Unique, descriptive title and meta description for each page.",Fail,Yes,SC-094
+TC-062,Booking / Room details,Room detail blocks check-out on or before check-in,Negative,P1,BUG-014,Inline error; Continue disabled; no navigation to /booking.,Fail,Yes,SC-043
+TC-063,Booking / Room details,Room detail blocks past dates and stays over 90 nights,Boundary,P1,BUG-014,Yesterday rejected; 90 nights accepted; 91 rejected with the same rule as the server.,Fail,Yes,SC-043
+TC-064,Rooms / Search,"Search bar date validation (past, inverted, same day)",Negative,P1,BUG-015,Each case blocked with a message; picker disables past dates.,Fail,Yes,SC-021
+TC-065,Rooms / Search,Default dates follow the guest's time zone (WAT),Boundary,P3,BUG-016,Default check-in is today (WAT).,Fail,Yes,SC-024
+TC-066,Booking / Pricing,"Total and breakdown identical on room detail, guest details and Review",Functional,P1,BUG-017,Same line items and same total on every step.,Fail,Yes,"SC-054, SC-045"
+TC-067,Booking / Pricing,"Tax and fee lines are guest-facing, named clearly and calculated correctly",Functional,P2,BUG-018,"Clear names; amounts = rate x room total, rounded consistently.",Fail,Yes,SC-055
+TC-068,Booking / Offers,5-night stay applies 'fifth night on us',Functional,P2,BUG-019,4 nights charged or a discount line shown.,Fail,Yes,SC-056
+TC-069,Policies,"Privacy, Terms and Cancellation policy pages load",Functional,P1,BUG-020,HTTP 200 with policy content.,Fail,Yes,"SC-090, SC-091, SC-092"
+TC-070,Global / API,No failing API calls or console errors on page load,Functional,P2,BUG-021,All API calls 2xx; no console errors.,Fail,Yes,SC-103
+TC-071,Branches,"Branch cards show room types, lowest price, contacts, directions, offers and photo",Functional,P1,BUG-022,All fields populated and consistent with /rooms.,Fail,Yes,SC-075
+TC-072,Branches,'See rooms at <branch>' opens Rooms filtered to that branch,Functional,P2,,/rooms?branchId=<id> with the matching heading.,Pass,Yes,SC-076
+TC-073,Branches,'Contact this branch' opens Contact with that branch tab selected,Functional,P2,BUG-048,/contact with the Lekki tab active and 'Going to ... Lekki Branch'.,Fail,Yes,SC-077
+TC-074,Branches / Content,Branch names and addresses are valid and consistent everywhere,UI,P2,BUG-023,Consistent naming; valid addresses; no overflow.,Fail,Yes,SC-079
+TC-075,Branches / Content,Lagos branch name and address follow the standard format,UI,P3,BUG-024,'Oneflare Grand Plaza - Lagos Branch' and a single valid street address.,Fail,Yes,SC-079
+TC-076,Rooms / Listing,Lagos branch lists only Lagos rooms and no test data,Functional,P1,BUG-025,Only Lagos inventory; no test names.,Fail,Yes,"SC-032, SC-033"
+TC-077,Rooms / Listing,No test or placeholder records visible on any public page,Regression,P1,BUG-025,Zero test records.,Fail,Yes,SC-033
+TC-078,Rooms / Filters,Price slider range matches real min and max room prices,Boundary,P2,BUG-026,All rooms visible by default; range = data range.,Fail,Yes,SC-035
+TC-079,Rooms / Filters,Filter options are built from the branch inventory,Functional,P2,BUG-028,"Only options that exist in the branch, each returning results.",Fail,Yes,"SC-034, SC-036, SC-037"
+TC-080,Rooms / Filters,"Mobile filter drawer opens, applies and closes",UI,P2,,Drawer opens; button count matches; list updates on close.,Pass,Yes,SC-039
+TC-081,Rooms / Filters,Filters survive reload and back navigation,Functional,P3,,Filters kept (URL or state).,Fail,Yes,SC-040
+TC-082,Home,'Free for your dates' shows the selected branch's rooms and prices,Functional,P1,BUG-029,Same rooms and prices.,Fail,Yes,SC-016
+TC-083,Home,"Hero section: title, subtitle, image and Explore rooms CTA",UI,P3,BUG-046,Final copy; image loads; CTA opens /rooms.,Fail,Yes,SC-013
+TC-084,Home,"Home search widget submits to Rooms with branch, dates and guests",Functional,P1,,/rooms?branchId=<Owerri>&checkIn&checkOut&adults=3 with values pre-filled.,Pass,Yes,"SC-014, SC-023"
+TC-085,Home,Amenities section lists the hotel's amenities,UI,P3,BUG-010,Full amenity list with icons.,Fail,Yes,SC-018
+TC-086,Global / Header,"Mobile hamburger menu opens, lists all links and closes",UI,P2,,All nav links + Book now; menu closes.,Pass,Yes,SC-006
+TC-087,Global / Footer,"Footer legal line shows company name, RC number and current year",UI,P3,,"Correct legal entity, RC and year.",Pass,Yes,SC-012
+TC-088,Rooms / Details,"Room detail shows size, in-room amenities, house rules and cancellation summary",Functional,P2,BUG-030,All sections populated.,Fail,Yes,"SC-041, SC-042"
+TC-089,Rooms / Details,Adults/children steppers respect room capacity,Boundary,P2,,Cannot exceed capacity or go below 1 adult / 0 children.,Pass,Yes,SC-044
+TC-090,Rooms / Details,Other rooms block and breadcrumb show the branch and link correctly,UI,P3,BUG-030,'Rooms / <Branch> / <Room>'; 'Other rooms at <Branch>'; links work.,Fail,Yes,"SC-046, SC-047"
+TC-091,Rooms / Details,Invalid room ID shows a not-found state,Negative,P2,BUG-037,'Room not found' + link to Rooms; HTTP 404.,Fail,Yes,SC-048
+TC-092,Booking / Room details,Search guest count carries to room detail and booking,Functional,P2,BUG-031,Adults = 2 or a capacity warning.,Fail,Yes,"SC-022, SC-062"
+TC-093,Booking / Guest details,Booking step indicator shows the current step,UI,P3,,Step 2 then 3 highlighted.,Pass,No,SC-050
+TC-094,Booking / Guest details,Consent checkbox is required and links to a working privacy policy,Negative,P1,BUG-020,Blocked with message; policy opens.,Fail,Yes,SC-052
+TC-095,Booking / Review,"Review step shows stay, guest and price, with working edit links",Functional,P1,BUG-049,Correct data; edit links go back with data kept.,Fail,Yes,"SC-053, SC-062"
+TC-096,Booking / Review,Confirm booking (pay at hotel) creates a reservation and reference,Functional,P1,,Step 4 'Confirmed' with reference; room inventory updated.,Blocked,Yes,"SC-057, SC-059"
+TC-097,Booking / Review,'Pay at the hotel / unpaid' messaging is consistent and clear,UI,P3,,"Clear, consistent statement that no payment is taken online and the room is held only after confirm.",Pass,No,SC-064
+TC-098,Booking / Availability,"Server rechecks dates, capacity and room before quoting",Security,P1,,All rejected with 4xx.,Pass,Yes,SC-059
+TC-099,Booking / Guest details,Direct /booking without a selected room redirects safely,Negative,P2,,Redirect to Rooms or 'choose a room first' message.,Pass,Yes,SC-063
+TC-100,Account,Sign-in modal: role selection (Customer / Agent) and close,Functional,P2,,Role selectable; form opens; modal closes; focus returns.,Pass,Partial,"SC-004, SC-065"
+TC-101,Account,Sign-in mandatory field validation,Negative,P2,,'Required' on both fields; no API call.,Pass,Yes,SC-066
+TC-102,Account,Brute-force protection on sign-in,Security,P2,BUG-041,"Throttle, CAPTCHA or lockout.",Fail,Partial,SC-067
+TC-103,Account,Create an account: validation and success,Functional,P2,,Field validation; account created; verification sent.,Blocked,Yes,SC-068
+TC-104,Account,Forgot password flow,Functional,P2,,Reset email; token expires; generic message for unknown emails.,Blocked,Yes,SC-069
+TC-105,Account,Account page for a signed-in customer shows bookings and profile,Functional,P2,BUG-043,"Bookings, profile; no agent-only wording.",Blocked,Yes,SC-070
+TC-106,Account,Agent role: book for clients and see commissions,Functional,P3,,Agent features work; customer users never see them.,Blocked,No,SC-073
+TC-107,Account,Sign out clears the session,Security,P2,,Session cleared; protected pages need sign-in.,Blocked,Yes,SC-074
+TC-108,Branches / Search,Branch choice persists across pages,Functional,P3,BUG-032,Lagos stays selected.,Fail,Yes,SC-078
+TC-109,Gallery,Gallery category filter,Functional,P3,,Only Gym photos; All restores.,Pass,Yes,SC-080
+TC-110,Gallery,Gallery location filter,Functional,P3,BUG-034,Branch photos or empty-state message.,Fail,Yes,SC-081
+TC-111,Gallery,"Photo lightbox opens, navigates and closes",UI,P3,,Lightbox with caption; keyboard works.,Pass,Partial,SC-082
+TC-112,Gallery,Gallery copy and images are accurate,UI,P3,BUG-035,"Accurate copy, unique images, rate links on room photos.",Fail,No,SC-083
+TC-113,About,"About page shows heading, story and principles",UI,P2,BUG-036,"H1, description and principles.",Fail,Yes,SC-084
+TC-114,Contact,'Look it up with your reference' opens a booking lookup,Functional,P2,BUG-043,Lookup form (reference + email).,Fail,Yes,SC-089
+TC-115,SEO / Errors,"robots.txt, sitemap.xml and Open Graph tags exist",Functional,P3,BUG-044,"Both 200; OG title, description, image.",Fail,Yes,SC-095
+TC-116,Responsive,Branches page at 375px,UI,P2,BUG-038,Cards stack; text wraps; buttons visible.,Fail,No,SC-096
+TC-117,Accessibility,Touch targets at least 44px on mobile,Accessibility,P3,BUG-039,>= 44px.,Fail,Partial,"SC-096, SC-106"
+TC-118,Security,Security response headers present,Security,P2,BUG-040,"CSP, frame-ancestors/X-Frame-Options, nosniff, Referrer-Policy.",Fail,Yes,SC-108
+TC-119,Security,API errors do not leak internals; unknown API routes return JSON 404,Security,P3,BUG-042,Generic JSON errors.,Fail,Yes,SC-112
+TC-120,Booking / Guest details,Guest name and identifier character validation,Negative,P3,BUG-047,Invalid input rejected client-side; output escaped everywhere incl. HMS.,Fail,Yes,SC-109
+TC-121,Global / Content,"Content and copy review (grammar, placeholders, test contacts)",UI,P3,BUG-046,"No typos, placeholders or test contacts.",Fail,No,SC-113
+TC-122,Global / Content,Currency formatting and rounding (Naira),UI,P3,,"Consistent N#,##0 format; rounding rule documented.",Pass,Yes,SC-114
+TC-123,Accessibility,Screen-reader landmarks and headings on each page,Accessibility,P3,BUG-036,"One meaningful H1 per page; header, nav, main, footer landmarks.",Fail,Partial,SC-106

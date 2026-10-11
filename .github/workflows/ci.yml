@@ -1,31 +1,64 @@
 name: Oneflare QA Pipeline
 
+# End-to-end pipeline:
+#   lint -> smoke -> (regression x3 browsers | non-functional | api/security) -> report -> quality-gate
+# Runs on every PR, on pushes to main and work branches, nightly, on demand, and automatically after a
+# successful (Vercel) deployment so every preview build is tested at its own URL.
 on:
   pull_request:
   push:
-    branches: [main]
+    branches: [main] # feature branches are covered by their pull_request runs (no duplicate pipelines)
   schedule:
-    - cron: "0 5 * * *"          # nightly 05:00 UTC (06:00 Lagos) full run
+    - cron: "0 5 * * *" # nightly 05:00 UTC (06:00 Lagos) full run
+  deployment_status: # Vercel GitHub integration posts this after each deploy
   workflow_dispatch:
     inputs:
       base_url:
         description: "Environment under test"
         default: "https://hotel-plaza-preview.vercel.app"
+      known_defects:
+        description: "xfail = track open bugs as xfail; fail = retest run, open bugs fail the build"
+        type: choice
+        options: [xfail, fail]
+        default: xfail
+      allow_live_writes:
+        description: "Run tests that create real accounts/bookings/messages (workbook 'Blocked' cases)"
+        type: boolean
+        default: false
 
-concurrency:                      # a new push cancels the older run for the same branch
-  group: ci-${{ github.ref }}
+concurrency: # a new push cancels the older run for the same ref
+  group: ci-${{ github.workflow }}-${{ github.event.deployment.id || github.ref }}
   cancel-in-progress: true
 
 permissions:
-  contents: read                  # least privilege
+  contents: read # least privilege
 
 env:
-  BASE_URL: ${{ inputs.base_url || 'https://hotel-plaza-preview.vercel.app' }}
+  # deployment_status -> the URL that was just deployed; manual -> input; otherwise the preview site
+  BASE_URL: ${{ github.event.deployment_status.environment_url || github.event.deployment_status.target_url || inputs.base_url || vars.BASE_URL || 'https://hotel-plaza-preview.vercel.app' }}
+  KNOWN_DEFECTS: ${{ inputs.known_defects || 'xfail' }}
+  ALLOW_LIVE_WRITES: ${{ inputs.allow_live_writes && 'true' || 'false' }}
+  TEST_EMAIL: ${{ secrets.TEST_EMAIL }}
+  TEST_PASSWORD: ${{ secrets.TEST_PASSWORD }}
+  TEST_PHONE: ${{ vars.TEST_PHONE || '+2348012345678' }}
+  PERF_TTFB_MS: ${{ vars.PERF_TTFB_MS || '800' }}
+  PERF_DCL_MS: ${{ vars.PERF_DCL_MS || '3000' }}
+  PERF_LOAD_MS: ${{ vars.PERF_LOAD_MS || '5000' }}
+  PERF_LCP_MS: ${{ vars.PERF_LCP_MS || '4000' }}
   PYTHON_VERSION: "3.12"
+  PYTEST_COMMON: --reruns 1 --reruns-delay 2
 
 jobs:
+  # ---------- skip deployments that did not succeed ----------
+  guard:
+    runs-on: ubuntu-latest
+    if: github.event_name != 'deployment_status' || github.event.deployment_status.state == 'success'
+    steps:
+      - run: echo "Testing $BASE_URL (event=${{ github.event_name }}, known_defects=$KNOWN_DEFECTS)"
+
   # ---------- GATE 1: static checks (seconds, no browser) ----------
   lint:
+    needs: guard
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -33,9 +66,12 @@ jobs:
       - uses: actions/setup-python@v5
         with: { python-version: "${{ env.PYTHON_VERSION }}", cache: pip }
       - run: pip install -r requirements.txt
-      - run: ruff check .                              # lint errors fail the build
-      - run: ruff format --check .                     # formatting drift fails the build
-      - run: pytest --collect-only -q --base-url "$BASE_URL" -p no:cacheprovider   # collection must succeed
+      - run: ruff check . # lint errors fail the build
+      - run: ruff format --check . # formatting drift fails the build
+      - name: Test collection succeeds and every test is linked to a workbook TC
+        run: |
+          pytest --collect-only -q --base-url "$BASE_URL" -p no:cacheprovider
+          python ci/check_traceability.py
 
   # ---------- GATE 2: smoke - 100% must pass ----------
   smoke:
@@ -49,10 +85,10 @@ jobs:
       - run: pip install -r requirements.txt
       - run: playwright install --with-deps chromium
       - name: Run smoke suite
-        run: pytest -m smoke --base-url "$BASE_URL" --reruns 1 --reruns-delay 2 -n 2
+        run: pytest -m smoke --base-url "$BASE_URL" $PYTEST_COMMON -n 2 --known-defects "$KNOWN_DEFECTS"
       - name: Enforce gate (100% pass, at least 8 tests)
         if: always()
-        run: python ci/quality_gate.py reports/junit.xml --min-pass-rate 100 --min-tests 8
+        run: python ci/quality_gate.py reports/junit.xml --name Smoke --min-pass-rate 100 --min-tests 8
       - uses: actions/upload-artifact@v4
         if: always()
         with: { name: smoke-reports, path: reports/, retention-days: 14 }
@@ -63,7 +99,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 40
     strategy:
-      fail-fast: false             # let every browser finish so you see all failures
+      fail-fast: false # let every browser finish so you see all failures
       matrix:
         browser: [chromium, firefox, webkit]
     steps:
@@ -73,10 +109,15 @@ jobs:
       - run: pip install -r requirements.txt
       - run: playwright install --with-deps ${{ matrix.browser }}
       - name: Run functional suite
-        run: pytest tests/functional --browser ${{ matrix.browser }} --base-url "$BASE_URL" --reruns 1 --reruns-delay 2 -n 3
+        continue-on-error: true # the >=95% gate below decides, not pytest's exit code
+        run: >
+          pytest tests/functional --browser ${{ matrix.browser }} --base-url "$BASE_URL"
+          $PYTEST_COMMON -n 4 --known-defects "$KNOWN_DEFECTS"
       - name: Enforce gate (>=95% pass)
         if: always()
-        run: python ci/quality_gate.py reports/junit.xml --min-pass-rate 95 --min-tests 30 --max-duration 1500
+        run: >
+          python ci/quality_gate.py reports/junit.xml --name "Regression (${{ matrix.browser }})"
+          --min-pass-rate 95 --min-tests 60 --max-duration 1500
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -84,7 +125,7 @@ jobs:
           path: reports/
           retention-days: 14
 
-  # ---------- GATE 4: non-functional (perf budgets, axe a11y, responsive, security) ----------
+  # ---------- GATE 4: non-functional (perf budgets, axe a11y, responsive, security, SEO) ----------
   non-functional:
     needs: smoke
     runs-on: ubuntu-latest
@@ -96,18 +137,38 @@ jobs:
       - run: pip install -r requirements.txt
       - run: playwright install --with-deps chromium
       - name: Run non-functional suite
-        run: pytest tests/non_functional --base-url "$BASE_URL" --reruns 1 -n 2
+        run: pytest tests/non_functional --base-url "$BASE_URL" $PYTEST_COMMON -n 2 --known-defects "$KNOWN_DEFECTS"
       - name: Enforce gate (100% of enforced checks)
         if: always()
-        run: python ci/quality_gate.py reports/junit.xml --min-pass-rate 100 --min-tests 30
+        run: python ci/quality_gate.py reports/junit.xml --name Non-functional --min-pass-rate 100 --min-tests 40
       - uses: actions/upload-artifact@v4
         if: always()
         with: { name: non-functional-reports, path: reports/, retention-days: 14 }
 
+  # ---------- consolidated report: traceability vs the QA workbook ----------
+  report:
+    needs: [smoke, regression, non-functional]
+    if: ${{ !cancelled() && needs.smoke.result != 'skipped' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with: { path: all-reports }
+      - name: Publish traceability summary
+        run: |
+          for f in all-reports/*/traceability.md; do
+            echo "## $(basename "$(dirname "$f")")" >> "$GITHUB_STEP_SUMMARY"
+            sed -n '1,12p' "$f" | tail -n +3 >> "$GITHUB_STEP_SUMMARY"
+            echo >> "$GITHUB_STEP_SUMMARY"
+          done
+          python ci/quality_gate.py all-reports/*/junit.xml --name "Overall" --min-pass-rate 0 || true
+      - uses: actions/upload-artifact@v4
+        with: { name: qa-report-bundle, path: all-reports/, retention-days: 30 }
+
   # ---------- final verdict: the ONLY check you mark "required" in branch protection ----------
   quality-gate:
-    needs: [lint, smoke, regression, non-functional]
-    if: always()
+    needs: [guard, lint, smoke, regression, non-functional, report]
+    if: ${{ !cancelled() && needs.guard.result == 'success' }} # a superseded (cancelled) run reports nothing
     runs-on: ubuntu-latest
     steps:
       - name: Fail if any upstream gate failed or was cancelled

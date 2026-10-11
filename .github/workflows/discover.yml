@@ -1,0 +1,27 @@
+name: Site discovery (selector maintenance)
+
+# Manual tool: dumps ARIA snapshots / links / headers of the live site into the job log.
+# Use it when the UI changes and page-object selectors need re-deriving.
+on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: "Environment to inspect"
+        default: "https://hotel-plaza-preview.vercel.app"
+  push:
+    paths: ["ci/discover.py"]
+
+permissions:
+  contents: read
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12", cache: pip }
+      - run: pip install -r requirements.txt
+      - run: playwright install --with-deps chromium
+      - run: python ci/discover.py "${{ inputs.base_url || 'https://hotel-plaza-preview.vercel.app' }}"

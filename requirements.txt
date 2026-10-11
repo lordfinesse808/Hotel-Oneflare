@@ -5,3 +5,4 @@ pytest-xdist>=3.5               # parallel execution (-n)
 pytest-rerunfailures>=14.0      # one controlled retry for network flakiness
 axe-playwright-python>=0.1.4    # axe-core accessibility engine
 ruff>=0.5                       # linter / formatter used as a CI gate
+python-dotenv>=1.0              # loads .env for local runs
